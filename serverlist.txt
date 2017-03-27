@@ -11,3 +11,6 @@ IPAM
 Containers
 WDS
 Remote Access
+ADLS
+AD-Certificate server
+Network Policy Server
