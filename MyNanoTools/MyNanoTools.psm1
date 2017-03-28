@@ -6,91 +6,134 @@
 
 Function New-MyNanoImage {
 
-[cmdletbinding()]
+[cmdletbinding(SupportsShouldProcess)]
 Param(
 [Parameter(Mandatory)]
 [alias("name")]
 [string]$ComputerName,
 [Parameter(Mandatory)]
 [ValidateNotNullorEmpty()]
+[string]$Plaintext = "P@ssw0rd",
+[Parameter(Mandatory)]
+[ValidateNotNullorEmpty()]
 [string]$IPv4Address,
-[string[]]$Package = @('Microsoft-NanoServer-Guest-Package','Microsoft-NanoServer-DSC-Package'),
+[Parameter(Mandatory)]
+[ValidateScript({Test-Path $_})]
+[string]$ConfigData,
+[Parameter(Mandatory)]
+[ValidateScript({Test-Path $_})]
+[string]$DiskPath,
 [string]$SetupCompleteCommand,
 [string[]]$CopyPath,
-[switch]$Compute,
-[switch]$Storage,
-[switch]$Clustering,
-[switch]$Containers,
 [string]$DomainName,
 [switch]$ReuseDomainNode,
-[string]$DomainBlobPath,
-[ValidateNotNullorEmpty()]
-[string]$DiskPath = "E:\VMDisks",
-[ValidateNotNullorEmpty()]
-[string]$Plaintext = "P@ssw0rd"
+[string]$DomainBlobPath
 )
 
 $start = Get-Date
+
+Write-Verbose "Importing values from $ConfigData"
+$config = Import-PowerShellDataFile -Path $ConfigData
+
+#add each entry to PSBoundParameters which will eventually be 
+#splatted to New-NanoServerImage
+foreach ($key in $config.keys) {
+    $PSBoundParameters.Add($key,$config.item($key))
+}
+
+#remove some parameters that don't belong to New-NanoServerImage
+$PSBoundParameters.Remove("DiskPath") | Out-Null
+$PSBoundParameters.Remove("ConfigData") | Out-Null
+$PSBoundParameters.Remove("Plaintext") | Out-Null
 
 Write-Verbose "Creating a new Nano image for $($Computername.toupper())"
 $Target = Join-Path $diskPath -ChildPath "$computername.vhdx"
 $secure = ConvertTo-SecureString -String $plainText -AsPlainText -Force
 
-#remove some parameters that don't belong to New-NanoServerImage
-$PSBoundParameters.Remove("DiskPath") | Out-Null
-$PSBoundParameters.Remove("plaintext") | Out-Null
+#add to PSBoundParameters
+$PSBoundParameters.Add("TargetPath",$target) | Out-Null
+$PSBoundParameters.Add("AdministratorPassword",$secure) | Out-Null
 
-#set my default values
-$PSBoundParameters.Add("DeploymentType","Guest")
-$PSBoundParameters.Add("Edition","Standard")
-$PSBoundParameters.Add("TargetPath",$Target)
-$PSBoundParameters.Add("administratorPassword",$secure)
-$PSBoundParameters.Add("Basepath","c:\NanoServer")
-$PSBoundParameters.Add("Defender",$True)
-$PSBoundParameters.Add("EnableRemoteManagementPort",$True)
-$PSBoundParameters.add("EnableEMS",$True)
-$PSBoundParameters.Add("EMSPort",1)
-$PSBoundParameters.Add("EMSBaudRate",115200)
-$PSBoundParameters.Add("Ipv4DNS",@('172.16.30.203','172.16.30.50'))
-$PSBoundParameters.Add("InterfaceNameorIndex","Ethernet")
-$PSBoundParameters.Add("Ipv4Subnet",'255.255.0.0')
-$PSBoundParameters.Add("IPv4Gateway",'172.16.10.254')
-$PSBoundParameters.Add("Package",$Package)
+Write-Verbose "Using these values"
 $PSBoundParameters | Out-String | write-verbose 
 
-$result = New-NanoServerImage @PSBoundparameters
+if ($PSCmdlet.ShouldProcess($target)) {
+    Try {
+        $result = New-NanoServerImage @PSBoundparameters -ErrorAction Stop
+        #write image path to the pipeline
+        [pscustomobject]@{
+            Result = $result
+            Name = $ComputerName
+            VHDPath = $Target
+        }
+    }
+    Catch {
+        Write-Warning "Error. $($_.exception.message)"
+    }
+} #should process
 
 $end = Get-Date
 Write-Verbose "Image created in $($end-$Start)"
 
-#write image path to the pipeline
-[pscustomobject]@{
-    Result = $result
-    Name = $ComputerName
-    VHDPath = $Target
-}
-
 }
 
 Function New-MyNanoVM {
-[cmdletbinding()]
+[cmdletbinding(SupportsShouldProcess)]
 Param(
 [Parameter(Position = 0, Mandatory,ValueFromPipelineByPropertyName)]
 [string]$Name,
 [Parameter(Position = 1, Mandatory,ValueFromPipelineByPropertyName)]
 [string]$VhdPath,
-[Parameter()]
+[Parameter(Mandatory)]
 [string]$Path,
+[ValidateSet("Dynamic","Static")]
+[string]$Memory = "Dynamic",
 [ValidateNotNullorEmpty()]
 [int32]$MemoryStartupBytes = 512MB,
-[string]$SwitchName = "DomainNet"
+[ValidateNotNullorEmpty()]
+#this will be ignored if using Static memory
+[int64]$MemoryMaximumBytes = 1GB,
+[ValidateScript({$_ -ge 1})]
+[int]$ProcessorCount = 1,
+[Parameter(Mandatory)]
+[ValidateNotNullOrEmpty()]
+[string]$SwitchName,
+[switch]$Start
 )
 
+#create a generation 2 VM
 $PSBoundParameters.Add("Generation",2)
+
+#remove parameters that don't belong to New-VM
+$PSBoundParameters.Remove("MemoryMaximumBytes") | Out-Null
+$PSBoundParameters.Remove("ProcessorCount") | Out-Null
+$PSBoundParameters.Remove("Memory") | Out-Null
+$PSBoundParameters.Remove("Start") | Out-Null
+
+#create a hashtable of parameters for Set-VM
+$set = @{
+ MemoryMinimumBytes = $MemoryStartupBytes
+ ProcessorCount = $ProcessorCount
+}
+
+if ($Memory -eq 'Dynamic') {
+    $set.Add("DynamicMemory",$True)
+    $set.Add("MemoryMaximumBytes", $MemoryMaximumBytes)
+}
+else {
+    $set.Add("StaticMemory",$True)
+}
 
 $vm = New-VM @PSBoundParameters
 
-$vm | Set-VM -DynamicMemory -MemoryMaximumBytes 1gb -MemoryMinimumBytes $MemoryStartupBytes
+$vm | Set-VM @set
 
+if ($start) {
+    Start-VM $vm
+}
 }
 
+<#
+New-MyNanoImage -ComputerName "NFoo" -Plaintext P@ssw0rd -IPv4Address "172.16.80.2" -DiskPath E:\disks -ConfigData .\NanoDefaults.psd1 | 
+New-MyNanoVM -Path E:\VMs -SwitchName DomainNet -MemoryStartupBytes 1GB
+#>
