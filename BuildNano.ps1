@@ -2,7 +2,8 @@
 
 Return "This is a demo file to walk through you fool!"
 
-Import-Module .\MyNanoTools\MyNanoTools.psd1 -force
+#https://github.com/jdhitsolutions/myNanoTools
+Import-Module s:\MyNanoTools\MyNanoTools.psd1 -force
 
 #region Basics
 #parameters for New-MyNanoImage
@@ -55,8 +56,8 @@ Checkpoint-VM -Name $imgparam.ComputerName -SnapshotName "Baseline"
 #DSC Configuration
 psedit .\configurations\FileConfig.ps1
 
-nanofile -Computername n-srv1 -OutputPath C:\DSC\NanoFile
-psedit C:\dsc\NanoFile\n-srv1.mof
+nanofile -Computername $imgparam.ComputerName -OutputPath C:\DSC\NanoFile
+psedit C:\dsc\NanoFile\$($imgparam.ComputerName).mof
 
 #copy DSC Resources
 $s = New-PSSession $imgparam.ComputerName
@@ -67,7 +68,7 @@ foreach ($module in $modules) {
     Copy-Item -recurse -Destination 'C:\Program Files\WindowsPowerShell\Modules' -force -Tosession $S
 }
 
-invoke-command { Get-DscResource } -session $s| select name,module,version
+invoke-command { Get-DscResource } -session $s | select name,module,version
 
 #push configuration
 Set-DscLocalConfigurationManager -Path C:\dsc\NanoFile -Verbose
@@ -83,7 +84,7 @@ dir \\n-srv1\IT$
 Remove-PSSession $s
 
 #reset demo
-Get-VMSnapshot -VMName n-srv1 | Restore-VMSnapshot -confirm:$false
+# Get-VMSnapshot -VMName n-srv1 | Restore-VMSnapshot -confirm:$false
 
 #endregion
 
@@ -112,10 +113,10 @@ New-MyNanoImage @imgparam | New-MyNanoVM @vmparam
 Checkpoint-VM -Name $imgparam.ComputerName -SnapshotName "Baseline"
 
 #DSC Configuration
-psedit .\configurations\FileConfig.ps1
+psedit .\configurations\WebConfig.ps1
 
-nanofile -Computername n-srv1 -OutputPath C:\DSC\NanoFile
-psedit C:\dsc\NanoFile\n-srv1.mof
+nanoweb -Computername $imgparam.ComputerName -OutputPath C:\DSC\NanoFile
+psedit C:\dsc\NanoFile\$($imgparam.ComputerName).mof
 
 #copy DSC Resources
 $s = New-PSSession $imgparam.ComputerName
@@ -133,16 +134,12 @@ Set-DscLocalConfigurationManager -Path C:\dsc\NanoFile -Verbose
 Start-DscConfiguration -Path C:\dsc\NanoFile -Verbose -Wait
 
 #verify
-Get-SMBShare -CimSession n-srv1
-dir \\n-srv1\Public 
-Get-content \\n-srv1\public\readme.txt
 
-dir \\n-srv1\IT$
 
 Remove-PSSession $s
 
 #reset demo
-Get-VMSnapshot -VMName n-srv1 | Restore-VMSnapshot -confirm:$false
+# Get-VMSnapshot -VMName n-srv1 | Restore-VMSnapshot -confirm:$false
 
 
 #endregion
