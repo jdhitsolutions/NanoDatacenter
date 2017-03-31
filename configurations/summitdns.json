@@ -1,0 +1,42 @@
+[
+    {
+        "Name":  "Server-1",
+        "Target":  "172.16.99.100"
+    },
+    {
+        "Name":  "Server-2",
+        "Target":  "172.16.99.101"
+    },
+    {
+        "Name":  "Server-3",
+        "Target":  "172.16.99.102"
+    },
+    {
+        "Name":  "Server-4",
+        "Target":  "172.16.99.103"
+    },
+    {
+        "Name":  "Server-5",
+        "Target":  "172.16.99.104"
+    },
+    {
+        "Name":  "Server-6",
+        "Target":  "172.16.99.105"
+    },
+    {
+        "Name":  "Server-7",
+        "Target":  "172.16.99.106"
+    },
+    {
+        "Name":  "Server-8",
+        "Target":  "172.16.99.107"
+    },
+    {
+        "Name":  "Server-9",
+        "Target":  "172.16.99.108"
+    },
+    {
+        "Name":  "Server-10",
+        "Target":  "172.16.99.109"
+    }
+]
