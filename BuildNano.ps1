@@ -1,4 +1,4 @@
-﻿#requires -version 5.0
+﻿#requires -version 5.1
 
 Return "This is a demo file to walk through you fool!"
 
@@ -11,21 +11,21 @@ Import-Module S:\DscResourceTools -force
 #region Basics
 #parameters for New-MyNanoImage
 $imgparam = @{
-ComputerName = "NFoo"
-Plaintext = "P@ssw0rd"
-IPv4Address = "172.16.80.2"
-DiskPath = "E:\VMdisks"
-ConfigData = ".\NanoDefaults.psd1"
-DomainName = "globomantics"
-ReuseDomainNode = $True
+    ComputerName = "NFoo"
+    Plaintext = "P@ssw0rd"
+    IPv4Address = "172.16.80.2"
+    DiskPath = "E:\VMdisks"
+    ConfigData = ".\NanoDefaults.psd1"
+    DomainName = "globomantics"
+    ReuseDomainNode = $True
 }
 
 #parameters for New-MyNanoVM
 $vmparam = @{
-Path = "E:\VMs" 
-SwitchName = "DomainNet" 
-MemoryStartupBytes = 1GB
-start = $True
+    Path = "E:\VMs" 
+    SwitchName = "DomainNet" 
+    MemoryStartupBytes = 1GB
+    start = $True
 }
 
 New-MyNanoImage @imgparam | New-MyNanoVM @vmparam
@@ -34,27 +34,32 @@ New-MyNanoImage @imgparam | New-MyNanoVM @vmparam
 
 #region File server
 
+psedit .\NanoFile.psd1
+
 $imgparam = @{
-ComputerName = "N-SRV1"
-Plaintext = "P@ssw0rd"
-IPv4Address = "172.16.40.2"
-DiskPath = "E:\VMdisks"
-ConfigData = ".\nanoFile.psd1"
-DomainName = "globomantics"
-ReuseDomainNode = $True
+    ComputerName = "N-SRV1"
+    Plaintext = "P@ssw0rd"
+    IPv4Address = "172.16.40.2"
+    DiskPath = "E:\VMdisks"
+    ConfigData = ".\nanoFile.psd1"
+    DomainName = "globomantics"
+    ReuseDomainNode = $True
 }
 
 #parameters for New-MyNanoVM
 $vmparam = @{
-Path = "E:\VMs" 
-SwitchName = "DomainNet" 
-MemoryStartupBytes = 1GB
-start = $True
+    Path = "E:\VMs" 
+    SwitchName = "DomainNet" 
+    MemoryStartupBytes = 1GB
+    start = $True
 }
 
 New-MyNanoImage @imgparam | New-MyNanoVM @vmparam
 
 Checkpoint-VM -Name $imgparam.ComputerName -SnapshotName "Baseline"
+
+#add some features
+Add-WindowsFeature File-Services -IncludeAllSubFeature -ComputerName $imgparam.ComputerName
 
 #DSC Configuration
 psedit .\configurations\FileConfig.ps1
@@ -96,21 +101,21 @@ Remove-PSSession $s
 psedit .\nanoweb.psd1
 
 $imgparam = @{
-ComputerName = "N-SRV2"
-Plaintext = "P@ssw0rd"
-IPv4Address = "172.16.40.3"
-DiskPath = "E:\VMdisks"
-ConfigData = ".\nanoweb.psd1"
-DomainName = "globomantics"
-ReuseDomainNode = $True
+    ComputerName = "N-SRV2"
+    Plaintext = "P@ssw0rd"
+    IPv4Address = "172.16.40.3"
+    DiskPath = "E:\VMdisks"
+    ConfigData = ".\nanoweb.psd1"
+    DomainName = "globomantics"
+    ReuseDomainNode = $True
 }
 
 #parameters for New-MyNanoVM
 $vmparam = @{
-Path = "E:\VMs" 
-SwitchName = "DomainNet" 
-MemoryStartupBytes = 1GB
-start = $True
+    Path = "E:\VMs" 
+    SwitchName = "DomainNet" 
+    MemoryStartupBytes = 1GB
+    start = $True
 }
 
 New-MyNanoImage @imgparam | New-MyNanoVM @vmparam
@@ -176,6 +181,9 @@ exit
 
 Remove-PSSession $s
 
+#NOTE: PowerShell Web Access not supported on Nano. 
+# requires a fuller version of the .NET Framework
+
 #reset demo
 # Get-VMSnapshot -VMName n-srv2 | Restore-VMSnapshot -confirm:$false
 
@@ -186,21 +194,21 @@ Remove-PSSession $s
 psedit .\Nanodns.psd1
 
 $imgparam = @{
-ComputerName = "N-SRV3"
-Plaintext = "P@ssw0rd"
-IPv4Address = "172.16.40.4"
-DiskPath = "E:\VMdisks"
-ConfigData = ".\nanodns.psd1"
-DomainName = "globomantics"
-ReuseDomainNode = $True
+    ComputerName = "N-SRV3"
+    Plaintext = "P@ssw0rd"
+    IPv4Address = "172.16.40.4"
+    DiskPath = "E:\VMdisks"
+    ConfigData = ".\nanodns.psd1"
+    DomainName = "globomantics"
+    ReuseDomainNode = $True
 }
 
 #parameters for New-MyNanoVM
 $vmparam = @{
-Path = "E:\VMs" 
-SwitchName = "DomainNet" 
-MemoryStartupBytes = 1GB
-start = $True
+    Path = "E:\VMs" 
+    SwitchName = "DomainNet" 
+    MemoryStartupBytes = 1GB
+    start = $True
 }
 
 New-MyNanoImage @imgparam | New-MyNanoVM @vmparam
@@ -265,21 +273,21 @@ Remove-PSSession $s
 #region DHCP
 
 $imgparam = @{
-ComputerName = "N-SRV4"
-Plaintext = "P@ssw0rd"
-IPv4Address = "172.16.40.5"
-DiskPath = "E:\VMdisks"
-ConfigData = ".\nanodefaults.psd1"
-DomainName = "globomantics"
-ReuseDomainNode = $True
+    ComputerName = "N-SRV4"
+    Plaintext = "P@ssw0rd"
+    IPv4Address = "172.16.40.5"
+    DiskPath = "E:\VMdisks"
+    ConfigData = ".\nanodefaults.psd1"
+    DomainName = "globomantics"
+    ReuseDomainNode = $True
 }
 
 #parameters for New-MyNanoVM
 $vmparam = @{
-Path = "E:\VMs" 
-SwitchName = "DomainNet" 
-MemoryStartupBytes = 1GB
-start = $True
+    Path = "E:\VMs" 
+    SwitchName = "DomainNet" 
+    MemoryStartupBytes = 1GB
+    start = $True
 }
 
 New-MyNanoImage @imgparam | New-MyNanoVM @vmparam
@@ -336,23 +344,23 @@ Remove-PSSession $s
 psedit .\Nanohyperv.psd1
 
 $imgparam = @{
-ComputerName = "N-SRV5"
-Plaintext = "P@ssw0rd"
-IPv4Address = "172.16.40.6"
-DiskPath = "E:\VMdisks"
-ConfigData = ".\nanohyperv.psd1"
-DomainName = "globomantics"
-ReuseDomainNode = $True
+    ComputerName = "N-SRV5"
+    Plaintext = "P@ssw0rd"
+    IPv4Address = "172.16.40.6"
+    DiskPath = "E:\VMdisks"
+    ConfigData = ".\nanohyperv.psd1"
+    DomainName = "globomantics"
+    ReuseDomainNode = $True
 }
 
 #parameters for New-MyNanoVM
 $vmparam = @{
-Path = "E:\VMs" 
-SwitchName = "DomainNet" 
-MemoryStartupBytes = 16GB
-Memory = "Static"
-ProcessorCount = 4
-start = $True
+    Path = "E:\VMs" 
+    SwitchName = "DomainNet" 
+    MemoryStartupBytes = 16GB
+    Memory = "Static"
+    ProcessorCount = 4
+    start = $True
 }
 
 New-MyNanoImage @imgparam | New-MyNanoVM @vmparam -Verbose
@@ -406,44 +414,299 @@ Remove-PSSession $s
 
 #region SQL server
 
-#endregion
+$imgparam = @{
+    ComputerName = "N-SRV6"
+    Plaintext = "P@ssw0rd"
+    IPv4Address = "172.16.40.7"
+    DiskPath = "E:\VMdisks"
+    ConfigData = ".\nanodefaults.psd1"
+    DomainName = "globomantics"
+    ReuseDomainNode = $True
+}
 
-#region WSUS server
+#parameters for New-MyNanoVM
+$vmparam = @{
+    Path = "E:\VMs" 
+    SwitchName = "DomainNet" 
+    MemoryStartupBytes = 8GB
+    Memory = "Static"
+    ProcessorCount = 4
+    start = $True
+}
+
+New-MyNanoImage @imgparam | New-MyNanoVM @vmparam -Verbose
+
+Checkpoint-VM -Name $imgparam.ComputerName -SnapshotName "Baseline"
+
+$iso = "D:\iso\en_sql_server_2016_enterprise_x64_dvd_8701793.iso"
+Add-VMDvdDrive -VMName $imgparam.computername -Path $iso
+get-vm $imgparam.ComputerName | Get-VMDvdDrive
+
+#DSC Configuration
+psedit .\configurations\SQLConfig.ps1
+
+$configdata = @{
+    AllNodes = @(
+        @{
+            NodeName = $imgparam.ComputerName
+            PSDscAllowPlainTextPassword = $true
+            PSDscAllowDomainUser = $true 
+        })
+}
+
+nanosql -Computername $imgparam.ComputerName -OutputPath C:\DSC\Nanosql -ConfigurationData $configdata -Credential globomantics\administrator
+psedit C:\dsc\Nanosql\$($imgparam.ComputerName).mof
+
+#copy DSC Resources
+$s = New-PSSession $imgparam.ComputerName
+
+$modules = "xSqlPs"
+foreach ($module in $modules) {
+    Split-Path (Get-Module $module -ListAvailable).ModuleBase |
+    Copy-Item -recurse -Destination 'C:\Program Files\WindowsPowerShell\Modules' -force -Tosession $S
+}
+
+invoke-command { Get-DscResource } -session $s| select name,module,version
+
+#push configuration
+Set-DscLocalConfigurationManager -Path C:\dsc\Nanosql -Verbose
+Start-DscConfiguration -Path C:\dsc\Nanosql -Verbose -Wait -force
+#clear 
+Remove-DscConfigurationDocument -Stage Pending -CimSession $imgparam.ComputerName
+
+#try Standard?
+$std = "D:\iso\en_sql_server_2016_standard_x64_dvd_8701871.iso"
+Set-VMDvdDrive -VMName $imgparam.computername -Path $std
+Start-DscConfiguration -Path C:\dsc\Nanosql -Verbose -Wait -force
+
+#try different resource
+#look at Nanosql2
+
+$modules = "xSqlServer"
+foreach ($module in $modules) {
+    Split-Path (Get-Module $module -ListAvailable).ModuleBase |
+    Copy-Item -recurse -Destination 'C:\Program Files\WindowsPowerShell\Modules' -force -Tosession $S
+}
+
+nanosql2 -Computername $imgparam.ComputerName -OutputPath C:\DSC\Nanosql2 -ConfigurationData $configdata -Credential globomantics\administrator
+Start-DscConfiguration -Path C:\dsc\Nanosql2 -Verbose -Wait -force
+Remove-DscConfigurationDocument -Stage Pending -CimSession $imgparam.ComputerName
+
+#try SQL Server vNext Preview
+# https://www.microsoft.com/en-us/evalcenter/evaluate-sql-server-vnext-ctp
+$ctp = 'D:\iso\SQLServerVnextCTP1.4-x64-ENU.iso'
+Set-VMDvdDrive -VMName $imgparam.computername -Path $ctp
+
+Start-DscConfiguration -Path C:\dsc\Nanosql2 -Verbose -Wait -force
+Remove-DscConfigurationDocument -Stage Pending -CimSession $imgparam.ComputerName
+
+Start-DscConfiguration -Path C:\dsc\Nanosql -Verbose -Wait -force
+
+#this might be possible in a container but I have not tested
+
+#cleanup
+Remove-VMDvdDrive -VMName $imgparam.ComputerName
+Remove-PSSession $s
+
+#reset demo
+# Get-VMSnapshot -VMName n-srv6 | Restore-VMSnapshot -confirm:$false
 
 #endregion
 
 #region Clustering?
 
-#endregion
+psedit .\NanoCluster.psd1
 
-#region SMTP 
+$imgparam = @{
+    ComputerName = "N-SRV7"
+    Plaintext = "P@ssw0rd"
+    IPv4Address = "172.16.40.8"
+    DiskPath = "E:\VMdisks"
+    ConfigData = ".\nanocluster.psd1"
+    DomainName = "globomantics"
+    ReuseDomainNode = $True
+}
 
-#endregion
+#parameters for New-MyNanoVM
+$vmparam = @{
+    Path = "E:\VMs" 
+    SwitchName = "DomainNet" 
+    MemoryStartupBytes = 1GB
+    Memory = "Dynamic"
+    ProcessorCount = 2
+    start = $True
+}
 
-#region IPAM
+New-MyNanoImage @imgparam | New-MyNanoVM @vmparam -Verbose
+
+$imgparam = @{
+    ComputerName = "N-SRV8"
+    Plaintext = "P@ssw0rd"
+    IPv4Address = "172.16.40.9"
+    DiskPath = "E:\VMdisks"
+    ConfigData = ".\nanocluster.psd1"
+    DomainName = "globomantics"
+    ReuseDomainNode = $True
+}
+
+New-MyNanoImage @imgparam | New-MyNanoVM @vmparam -Verbose
+
+#checkpoint
+Get-VM n-srv7,n-srv8 | Checkpoint-VM -SnapshotName "Baseline"
+
+#view installed features
+get-windowsfeature -comp n-srv7
+
+#DSC Config ?
+get-dscresource xcluster | Get-DSCResourceDetail -ov d
+$d.commands.where({$_.modulename -ne 'unknown'}) | select modulename -Unique
+
+icm { get-module failoverclusters -list } -computer n-srv7,n-srv8
+# --> no
+
+#Manual setup, which could be scripted
+
+psedit .\configCluster.ps1
+
+#verify
+#cluster roles may be limited
+get-windowsfeature -ComputerName n-srv7
+get-windowsfeature -ComputerName n-srv8
+cluadmin.msc
+
+#cleanup
+#destroy cluster
+# get-vm n-srv7,n-srv8 | Get-VMSnapshot | restore-vmsnapshot
 
 #endregion
 
 #region Containers
 
+psedit .\NanoContainers.psd1
+
+$imgparam = @{
+    ComputerName = "N-SRV9"
+    Plaintext = "P@ssw0rd"
+    IPv4Address = "172.16.40.10"
+    DiskPath = "E:\VMdisks"
+    ConfigData = ".\nanocontainers.psd1"
+    DomainName = "globomantics"
+    ReuseDomainNode = $True
+}
+
+#parameters for New-MyNanoVM
+$vmparam = @{
+    Path = "E:\VMs" 
+    SwitchName = "DomainNet" 
+    MemoryStartupBytes = 4GB
+    MemoryMaximumBytes = 4GB
+    Memory = "Dynamic"
+    ProcessorCount = 2
+    start = $True
+}
+
+New-MyNanoImage @imgparam | New-MyNanoVM @vmparam -Verbose
+
+Invoke-Command { get-module containers -list } -computer $imgparam.computername
+Get-WindowsFeature -computer $imgparam.ComputerName
+
+#configure
+# https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/deploy-containers-on-nano
+$s = New-PSSession -ComputerName $imgparam.ComputerName
+enter-pssession $s
+$sess = New-CimInstance -Namespace root/Microsoft/Windows/WindowsUpdate -ClassName MSFT_WUOperationsSession
+Invoke-CimMethod -InputObject $sess -MethodName ApplyApplicableUpdates
+gcim win32_quickfixengineering
+exit
+restart-computer $imgparam.computername -Wait -For WinRM
+
+#install Docker
+$s = New-PSSession -ComputerName $imgparam.ComputerName
+enter-pssession $s
+
+Install-Module -Name DockerMsftProvider -Repository PSGallery -Force
+Install-Package -Name docker -ProviderName DockerMsftProvider
+exit
+restart-computer $imgparam.computername -wait -for Winrm
+
+#pull images
+$s = New-PSSession -ComputerName $imgparam.ComputerName
+enter-pssession $s
+docker pull microsoft/nanoserver
+
+netsh advfirewall firewall add rule name="Docker daemon " dir=in action=allow protocol=TCP localport=2375
+
+new-item -Type File c:\ProgramData\docker\config\daemon.json
+Add-Content 'c:\programdata\docker\config\daemon.json' '{ "hosts": ["tcp://0.0.0.0:2375", "npipe://"] }'
+Restart-Service docker
+exit
+
+#checkpoint VM
+Checkpoint-VM -Name $imgparam.ComputerName -SnapshotName "Baseline"
+
+#client config
+Invoke-WebRequest "https://download.docker.com/components/engine/windows-server/cs-1.12/docker.zip" -OutFile "$env:TEMP\docker.zip" -UseBasicParsing
+Expand-Archive -Path "$env:TEMP\docker.zip" -DestinationPath $env:ProgramFiles
+# For quick use, does not require shell to be restarted.
+$env:path += ";c:\program files\docker"
+
+# For persistent use, will apply even after a reboot. 
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\Docker", [EnvironmentVariableTarget]::Machine)
+
+#validate in the console, not the ISE
+docker -H tcp://172.16.40.10:2375 run -it microsoft/nanoserver cmd
+
+remove-pssession $s
+
+#reset to Updates snapshot
+# get-vm n-srv9 | get-vmsnapshot -name Updates | restore-vmsnapshot
+
+#endregion
+
+#region SMTP 
+
+#no supported feature
+
+#endregion
+
+#region IPAM
+
+#no supported feature
+
 #endregion
 
 #region WDS
+
+#no supported feature
 
 #endregion
 
 #region Remote Access
 
+#no supported feature
+
 #endregion
 
 #region ADLS
+
+#no supported feature
 
 #endregion
 
 #region AD-Certificate server
 
+#no supported feature
+
 #endregion
 
 #region Network Policy Server
+
+#no supported feature
+
+#endregion
+
+#region WSUS server
+
+#no supported feature
 
 #endregion
