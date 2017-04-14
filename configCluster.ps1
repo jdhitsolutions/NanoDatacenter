@@ -1,6 +1,6 @@
 ﻿#configure cluster
 
-Return "This is not a script. Walk through the process"
+Return "This is not a script. Walk through the process."
 
 $computers = "n-srv7","n-srv8"
 

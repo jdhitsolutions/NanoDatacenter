@@ -1,14 +1,33 @@
 ﻿#requires -version 5.1
 
-Return "This is a demo file to walk through you fool!"
+Return "This is a demo file to walk through. Try again."
+
+<#
+This demo relies on a few projects I've been working on that are in my 
+GitHub repo. Eventually they will be published to the PowerShell Gallery. 
+
+For now you can go to the module, download a zip file and extract it locally.
+
+These modules are still being updated so it is possible these demos may fail
+at some point in the future.
+
+Jeff - April 14, 2017
+#>
+
+#Run this ON a Hyper-V server either on Windows 10 or Windows Server 2016
 
 #https://github.com/jdhitsolutions/myNanoTools
+#this module contains my tools for building and managing Nano virtual server
+#images and machines.
 Import-Module s:\MyNanoTools\MyNanoTools.psd1 -force
 
 #https://github.com/jdhitsolutions/DSCResourceTools
+#this module contains some tools for analyzing DSC Resources.
 Import-Module S:\DscResourceTools -force
 
 #region Basics
+
+#Demo provisioning a Nano server in a Hyper-V virtual machine.
 #parameters for New-MyNanoImage
 $imgparam = @{
     ComputerName = "NFoo"
@@ -80,7 +99,7 @@ invoke-command { Get-DscResource } -session $s | select name,module,version
 
 #push configuration
 Set-DscLocalConfigurationManager -Path C:\dsc\NanoFile -Verbose
-Start-DscConfiguration -Path C:\dsc\NanoFile -Verbose -Wait
+Start-DscConfiguration -Path C:\dsc\NanoFile -ComputerName n-srv1 -Verbose -Wait
 
 #verify
 Get-SMBShare -CimSession n-srv1
@@ -403,6 +422,7 @@ get-vm -ComputerName n-srv5
 enter-pssession $s
 get-vm | Get-VMHardDiskDrive | get-item
 Get-VMSwitch
+
 exit
 
 Remove-PSSession $s
